@@ -1,5 +1,16 @@
 # Base image which contains global dependencies
 FROM ubuntu:20.04 as base
+
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
+ENV XDG_CACHE_HOME=/root/.cache
+ENV ZEPHYR_TOOLCHAIN_VARIANT=gnuarmemb
+ENV GNUARMEMB_TOOLCHAIN_PATH=/root/gcc-arm-none-eabi-9-2019-q4-major
+ENV GOROOT="/opt/go"
+ENV GORBIN="/opt/go/bin"
+ENV PATH=$PATH:/opt/go/bin
+ENV PATH=$PATH:/root/go/bin
+
 WORKDIR /root/
 
 # System dependencies
@@ -54,7 +65,7 @@ RUN mkdir /root/ncs && \
     wget -qO- https://raw.githubusercontent.com/nrfconnect/sdk-nrf/master/.clang-format > /root/.clang-format &&\
     # Zephyr requirements of nrf
     cd ./ncs && \
-    west init -m https://github.com/nrfconnect/sdk-nrf --mr v1.6.1 && \
+    west init -m https://github.com/nrfconnect/sdk-nrf --mr v1.6.0 && \
     west update && \
     python3 -m pip install -r ./zephyr/scripts/requirements.txt && \
     python3 -m pip install -r ./nrf/scripts/requirements.txt && \
@@ -64,10 +75,9 @@ RUN mkdir /root/ncs && \
     # pip cache purge
     python3 -m pip cache purge &&\
     # Install ceedling
-    gem install ceedling
-
-ENV LC_ALL=C.UTF-8
-ENV LANG=C.UTF-8
-ENV XDG_CACHE_HOME=/root/.cache
-ENV ZEPHYR_TOOLCHAIN_VARIANT=gnuarmemb
-ENV GNUARMEMB_TOOLCHAIN_PATH=/root/gcc-arm-none-eabi-9-2019-q4-major
+    gem install ceedling &&\
+    # Install golang and goembehelp
+    wget https://golang.org/dl/go1.17.3.linux-amd64.tar.gz &&\
+    tar -C /opt -xzf go1.17.3.linux-amd64.tar.gz &&\
+    go install github.com/borchevkin/goembehelp@latest &&\
+    rm -f go1.17.3.linux-amd64.tar.gz 
